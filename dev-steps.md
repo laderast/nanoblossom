@@ -87,3 +87,29 @@ This section was revised after spec.md's 0.4 section changed. The first pass mea
 - Hold K3 and turn any encoder to change the delay time. While K3 is held, the bottom of the screen shows `delay time` and its value.
 - A plain K3 tap still toggles reverse. If an encoder was turned while K3 was held, releasing K3 doesn't toggle reverse.
 - If K2 is also held, the encoders control K2's layer (level, filter, mix) instead.
+
+## v0.5: fixes from spec.md "Fixes (0.5)"
+
+The 0.5 fix is in `nanoblossom.lua`, now v0.5, and the README's controls table and preset list are updated. It passes a syntax check, the smoke run, and a check that K2 taps cycle A through E. It still hasn't been heard on a norns.
+
+**Preset E**
+- Each voice picks one of three speeds per fragment: a fifth up (7 semitones, about 1.5×), an octave up (2×), or two octaves up (4×).
+- Unlike A–D, it has no normal-speed (1×) voice, since the spec lists only those three intervals. Adding 1× is a one-number change in the `PRESETS` table.
+- K2 taps now cycle A → B → C → D → E → A, and the header comment and README say A–E.
+
+**Screen labels for the fifth**
+- The voice lanes used to round speeds down to whole numbers, so a fifth would have shown as `1x`. Speeds that aren't whole numbers now show one decimal place, e.g. `1.5x` (`-1.5x` reversed). Half speed still shows as `.5x`.
+- The voice lanes are 4 pixels narrower to make room for the longer label.
+
+## v0.6: fixes from spec.md "Fixes (0.6)"
+
+Both 0.6 fixes are in `nanoblossom.lua`, now v0.6, and the README's preset list is updated. It passes a syntax check, the smoke run, and a check of the delay feedback at several mix settings. It still hasn't been heard on a norns.
+
+**1. Preset E includes 1×**
+- Each voice now picks from four speeds per fragment: normal (1×), a fifth up (about 1.5×), an octave up (2×), or two octaves up (4×).
+
+**2. Delay feedback rises faster with the mix**
+- Before, feedback rose in a straight line from 0 at 0% mix to its maximum (0.6) at 50% mix.
+- Now it reaches 0.6 at 25% mix, so it climbs twice as fast: 0.24 at 10% mix and 0.6 from 25% up.
+- The maximum is unchanged, so the echoes don't sustain any longer at high mix settings. To get longer tails, raise `DELAY_MAX_FEEDBACK`; values close to 1 make the echoes ring almost indefinitely.
+- Only feedback changed. The delay's volume and the reverb send still reach full at 50% mix.

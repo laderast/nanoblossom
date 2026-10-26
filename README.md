@@ -13,7 +13,7 @@ A norns script that clones the Mosaic modes of the Hologram Microcosm. A microlo
 | K2 hold + E2 | Filter: DJ filter (left is low pass, right is high pass) |
 | K2 hold + E3 | Mix: wet/dry between the dry sound (voices and input monitor) and the reverb + delay. Fully right is 100% wet |
 | K3 hold + any encoder | Delay time (1–16 sixteenth notes) |
-| K2 tap | Next preset (A–D) |
+| K2 tap | Next preset (A–E) |
 | K3 tap | Reverse on/off |
 | K2 hold + K3 | Hold: freeze capture and keep playing the current fragments |
 
@@ -23,6 +23,7 @@ A norns script that clones the Mosaic modes of the Hologram Microcosm. A microlo
 - **B**: normal and half speed (octave down)
 - **C**: double speed only
 - **D**: half, normal, double, and quad speed
+- **E**: normal speed, a fifth up, an octave up, and two octaves up
 
 ## Sync
 

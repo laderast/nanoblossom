@@ -48,3 +48,12 @@ D: Loops play back at half, normal, double, and quad speed. Sounds range from on
 
 - Add delay time as a parameter in terms of time steps from 1 to 16 steps (16th notes)
 - Add delay time as a knob by holding K3
+
+## Fixes (0.5)
+
+- Add a preset E that includes a fifth up, an octave up, and two octaves
+
+## Fixes (0.6)
+
+- Include the 1x voice in preset E
+- Increase the delay feedback more rapidly with the mix control

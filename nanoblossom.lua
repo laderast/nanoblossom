@@ -1,4 +1,4 @@
--- nanoblossom v0.4
+-- nanoblossom v0.6
 --
 -- microcosm-style mosaic:
 -- a clock-synced microlooper
@@ -14,7 +14,7 @@
 -- K2 hold + E3: wet/dry mix
 -- K3 hold + any enc: delay time
 --
--- K2 tap: next preset (A-D)
+-- K2 tap: next preset (A-E)
 -- K3 tap: reverse on/off
 -- K2 hold + K3: hold (freeze)
 --
@@ -44,6 +44,8 @@ local PRESETS = {
   {name = "B", rates = {0.5, 1}},
   {name = "C", rates = {2}},
   {name = "D", rates = {0.5, 1, 2, 4}},
+  -- normal, a fifth up (7 semitones), an octave up, and two octaves up
+  {name = "E", rates = {1, 2 ^ (7 / 12), 2, 4}},
 }
 -- fragments are captured into a ring of slots, so a voice can keep looping
 -- its fragment while the recorder moves on to fresh ones
@@ -83,6 +85,8 @@ local DELAY_MAX_SEC = 16
 -- delay level and feedback when the mix is fully wet
 local DELAY_MAX_LEVEL = 0.7
 local DELAY_MAX_FEEDBACK = 0.6
+-- the mix at which delay feedback reaches its max, so it builds quickly
+local FEEDBACK_FULL_MIX = 0.25
 -- dj filter cutoff ranges, in hz
 local LP_MAX_FC = 18000
 local LP_MIN_FC = 80
@@ -164,7 +168,14 @@ end
 
 local function rate_name(rate)
   local r = math.abs(rate)
-  local s = r == 0.5 and ".5x" or (math.floor(r) .. "x")
+  local s
+  if r == 0.5 then
+    s = ".5x"
+  elseif r == math.floor(r) then
+    s = math.floor(r) .. "x"
+  else
+    s = string.format("%.1fx", r)
+  end
   return rate < 0 and "-" .. s or s
 end
 
@@ -611,7 +622,8 @@ function apply_mix()
   end
   set_system_param("rev_cut_input", amp_to_db(wet))
   softcut.level(DELAY_VOICE, wet * DELAY_MAX_LEVEL)
-  softcut.pre_level(DELAY_VOICE, wet * DELAY_MAX_FEEDBACK)
+  local feedback = math.min(1, params:get("mix") / FEEDBACK_FULL_MIX)
+  softcut.pre_level(DELAY_VOICE, feedback * DELAY_MAX_FEEDBACK)
   for v = 1, NUM_VOICES do
     apply_voice_level(v)
   end
@@ -747,7 +759,7 @@ end
 
 -- one lane per voice: envelope bar and playback rate
 function draw_voices()
-  local x0, w = 26, 80
+  local x0, w = 26, 76
   local active = active_voices()
   for v = 1, NUM_VOICES do
     local y = 10 + (v - 1) * 7
