@@ -57,3 +57,7 @@ D: Loops play back at half, normal, double, and quad speed. Sounds range from on
 
 - Include the 1x voice in preset E
 - Increase the delay feedback more rapidly with the mix control
+
+## Fixes (0.7)
+
+- Change the bar countdown for each looper to move left to right for forward looping, and right to left for reverse looping

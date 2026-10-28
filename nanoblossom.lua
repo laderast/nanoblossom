@@ -1,4 +1,4 @@
--- nanoblossom v0.6
+-- nanoblossom v0.7
 --
 -- microcosm-style mosaic:
 -- a clock-synced microlooper
@@ -757,7 +757,8 @@ function draw_preset()
   screen.text(reversed() and "<rev" or "fwd>")
 end
 
--- one lane per voice: envelope bar and playback rate
+-- one lane per voice: envelope bar and playback rate.
+-- the bar shrinks left to right going forward, right to left in reverse
 function draw_voices()
   local x0, w = 26, 76
   local active = active_voices()
@@ -769,7 +770,8 @@ function draw_voices()
     screen.fill()
     if voice.busy then
       screen.level(12)
-      screen.rect(x0, y, math.max(1, math.floor(w * voice.env + 0.5)), 5)
+      local fill = math.max(1, math.floor(w * voice.env + 0.5))
+      screen.rect(reversed() and x0 or x0 + w - fill, y, fill, 5)
       screen.fill()
       screen.level(15)
       screen.move(128, y + 5)

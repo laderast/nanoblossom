@@ -113,3 +113,14 @@ Both 0.6 fixes are in `nanoblossom.lua`, now v0.6, and the README's preset list 
 - Now it reaches 0.6 at 25% mix, so it climbs twice as fast: 0.24 at 10% mix and 0.6 from 25% up.
 - The maximum is unchanged, so the echoes don't sustain any longer at high mix settings. To get longer tails, raise `DELAY_MAX_FEEDBACK`; values close to 1 make the echoes ring almost indefinitely.
 - Only feedback changed. The delay's volume and the reverb send still reach full at 50% mix.
+
+## v0.7: fixes from spec.md "Fixes (0.7)"
+
+The 0.7 fix is in `nanoblossom.lua`, now v0.7. It passes a syntax check. It still hasn't been seen on a norns screen.
+
+This section was revised after spec.md's 0.7 section was corrected. The first pass changed only reverse, because the spec then said "right to left" for both directions.
+
+**Bar countdown follows the play direction**
+- Going forward, each voice's bar is now pinned to the right and shrinks left to right as the loop fades, moving the same way as the `fwd>` arrow.
+- In reverse, the bar is pinned to the left and shrinks right to left, matching `<rev`. This is how every bar moved before v0.7.
+- Pressing reverse flips bars that are already counting down, not just new ones.
