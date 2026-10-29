@@ -124,3 +124,18 @@ This section was revised after spec.md's 0.7 section was corrected. The first pa
 - Going forward, each voice's bar is now pinned to the right and shrinks left to right as the loop fades, moving the same way as the `fwd>` arrow.
 - In reverse, the bar is pinned to the left and shrinks right to left, matching `<rev`. This is how every bar moved before v0.7.
 - Pressing reverse flips bars that are already counting down, not just new ones.
+
+## v0.8: fixes from spec.md "Fixes (0.8)"
+
+The 0.8 fix is in `nanoblossom.lua`, now v0.8, and the README's Sync section is updated. It passes a syntax check and a stubbed run of the clock switching, starting from each of the four norns clock sources. It still hasn't been run on a norns with a real MIDI clock.
+
+This section was revised after spec.md's 0.8 section changed. The first pass always fell back to the internal clock; the spec now says to use the norns clock setting, whether internal, link, or crow.
+
+**MIDI clock by default, the norns clock setting when none is arriving**
+- `Sync` still defaults to **MIDI Clock**. Before, that forced the system clock source to MIDI, so with no MIDI clock connected the loops never started and the screen showed "no midi clock".
+- The script now listens on all 16 MIDI ports for clock ticks. While they're arriving, the clock source is MIDI. If none arrive for 2 seconds, it switches back to the clock source the norns was set to before the script started (internal, link, or crow). It switches to MIDI again as soon as ticks return.
+- If the norns was already set to MIDI, the fallback is internal, since MIDI clock isn't arriving.
+- The script starts on the fallback source and moves to MIDI within a frame of the first tick, so a connected MIDI clock takes over right away.
+- The screen header shows the tempo followed by the source in use: `midi`, `int`, `link`, or `crow`. "no clock" now only appears if the clock itself stops ticking, for example with crow selected and no crow clock input.
+- `Sync` set to **System Clock** works as before: the script uses whatever clock source the norns was set to. That setting is restored when the script exits.
+- Many MIDI devices keep sending clock while their transport is stopped. In that case the script stays on MIDI clock.

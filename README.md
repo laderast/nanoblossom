@@ -27,7 +27,7 @@ A norns script that clones the Mosaic modes of the Hologram Microcosm. A microlo
 
 ## Sync
 
-The `Sync` param defaults to **MIDI Clock** and sets the system clock source to MIDI while the script runs. If no clock is arriving, the screen shows "no midi clock". Set `Sync` to **System Clock** to use whatever the norns clock is set to instead.
+The `Sync` param defaults to **MIDI Clock**. While MIDI clock is arriving on any MIDI port, the script syncs to it and the screen shows the tempo with `midi`. If no MIDI clock has arrived for 2 seconds, it falls back to the clock source the norns was set to before the script started (internal, link, or crow) and shows `int`, `link`, or `crow`. If the norns was already set to MIDI, it falls back to internal. It switches back to MIDI as soon as clock ticks return. Set `Sync` to **System Clock** to use whatever the norns clock is set to instead. The script restores your clock source when it exits.
 
 ## Delay time
 

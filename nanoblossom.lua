@@ -1,4 +1,4 @@
--- nanoblossom v0.7
+-- nanoblossom v0.8
 --
 -- microcosm-style mosaic:
 -- a clock-synced microlooper
@@ -19,7 +19,9 @@
 -- K2 hold + K3: hold (freeze)
 --
 -- syncs to midi clock by
--- default (PARAMS > Sync)
+-- default, falling back to the
+-- norns clock source when none
+-- is arriving (PARAMS > Sync)
 --
 -- based on microshimmer
 
@@ -94,9 +96,13 @@ local HP_MIN_FC = 20
 local HP_MAX_FC = 8000
 local FILTER_RQ = 1.2
 local FILTER_DEADZONE = 0.02
--- clock_source option for midi in the system clock params
+-- clock_source options in the system clock params
+local CLOCK_SOURCE_INTERNAL = 1
 local CLOCK_SOURCE_MIDI = 2
--- seconds without a clock tick before the screen warns about it
+-- midi status byte for a clock tick
+local MIDI_CLOCK_BYTE = 0xf8
+-- seconds without a clock tick before the screen warns about it,
+-- and without a midi clock tick before falling back to the internal clock
 local CLOCK_TIMEOUT = 2
 local SCREEN_FRAMERATE = 15
 
@@ -112,6 +118,7 @@ local rec_slot
 local rec_dur
 local rec_start_beat
 local last_tick_time = 0
+local last_midi_clock_time = -math.huge
 local k2_held = false
 local k2_used = false
 local k3_held = false
@@ -194,6 +201,14 @@ local function restore_system_param(id)
   end
 end
 
+local function midi_clock_alive()
+  return util.time() - last_midi_clock_time < CLOCK_TIMEOUT
+end
+
+local function using_midi_clock()
+  return params:get("sync") == 2 and midi_clock_alive()
+end
+
 local function slot_in_use(slot)
   for v = 1, NUM_VOICES do
     if voices[v].busy and voices[v].slot == slot then return true end
@@ -216,6 +231,7 @@ function init()
   end
 
   init_softcut()
+  init_midi()
   init_params()
   init_reverb()
   params:bang()
@@ -223,7 +239,10 @@ function init()
   tick_clock_id = clock.run(tick_loop)
 
   screen_metro = metro.init()
-  screen_metro.event = function() redraw() end
+  screen_metro.event = function()
+    update_clock_source()
+    redraw()
+  end
   screen_metro:start(1 / SCREEN_FRAMERATE)
 end
 
@@ -402,7 +421,7 @@ function init_params()
     default = 2,
     action = function(value)
       if value == 2 then
-        set_system_param("clock_source", CLOCK_SOURCE_MIDI)
+        update_clock_source()
       else
         restore_system_param("clock_source")
       end
@@ -420,6 +439,43 @@ function init_reverb()
 end
 
 -- Clock
+
+-- watch every midi port for clock ticks, so we know whether to sync to midi
+function init_midi()
+  for port = 1, 16 do
+    midi.connect(port).event = function(data)
+      if data[1] == MIDI_CLOCK_BYTE then
+        last_midi_clock_time = util.time()
+      end
+    end
+  end
+end
+
+-- the norns clock source from before the script changed it
+-- (internal if that was midi, since midi isn't arriving)
+local function fallback_clock_source()
+  local source = saved_params["clock_source"] or params:get("clock_source")
+  return source == CLOCK_SOURCE_MIDI and CLOCK_SOURCE_INTERNAL or source
+end
+
+-- short screen label for the fallback source
+function fallback_name()
+  local names = {"int", "midi", "link", "crow"}
+  return names[fallback_clock_source()] or "int"
+end
+
+-- in MIDI Clock mode, follow midi clock while it's arriving and fall back
+-- to the norns clock source (internal, link, or crow) when it stops
+function update_clock_source()
+  if params:get("sync") ~= 2 or params.lookup["clock_source"] == nil then
+    return
+  end
+  local source = midi_clock_alive() and CLOCK_SOURCE_MIDI
+    or fallback_clock_source()
+  if params:get("clock_source") ~= source then
+    set_system_param("clock_source", source)
+  end
+end
 
 function tick_loop()
   while true do
@@ -729,11 +785,14 @@ function draw_header()
   screen.move(0, 6)
   if util.time() - last_tick_time > CLOCK_TIMEOUT then
     screen.level(15)
-    screen.text(params:get("sync") == 2 and "no midi clock" or "no clock")
+    screen.text("no clock")
   else
     screen.level(4)
-    screen.text(math.floor(clock.get_tempo() + 0.5) .. " bpm"
-      .. (params:get("sync") == 2 and " midi" or ""))
+    local source = ""
+    if params:get("sync") == 2 then
+      source = using_midi_clock() and " midi" or " " .. fallback_name()
+    end
+    screen.text(math.floor(clock.get_tempo() + 0.5) .. " bpm" .. source)
   end
   screen.move(128, 6)
   if frozen() then

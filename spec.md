@@ -61,3 +61,7 @@ D: Loops play back at half, normal, double, and quad speed. Sounds range from on
 ## Fixes (0.7)
 
 - Change the bar countdown for each looper to move left to right for forward looping, and right to left for reverse looping
+
+## Fixes (0.8)
+
+- Make the default sync clock MIDI sync. If the MIDI clock does not exist, use the Norns internal default setting (whether it be internal, link, or crow) to sync. 
